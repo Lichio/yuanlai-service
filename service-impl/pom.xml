@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>yuanlai-service</artifactId>
+        <groupId>org.qingtai</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+
+    <artifactId>service-impl</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.qingtai</groupId>
+            <artifactId>service-interface</artifactId>
+            <version>1.1.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <!--MAVEN打包duboo可执行jar begin-->
+    <build>
+        <finalName>qingtai-service</finalName>
+
+        <!--<resources>-->
+            <!--<resource>-->
+                <!--<targetPath>${project.build.directory}/classes</targetPath>-->
+                <!--<directory>src/main/resources</directory>-->
+                <!--<filtering>true</filtering>-->
+                <!--<includes>-->
+                    <!--<include>**/*.xml</include>-->
+                    <!--<include>**/*.properties</include>-->
+                <!--</includes>-->
+            <!--</resource>-->
+            <!--&lt;!&ndash; 结合com.alibaba.dubbo.container.Main &ndash;&gt;-->
+            <!--<resource>-->
+                <!--<targetPath>${project.build.directory}/classes/META-INF/spring</targetPath>-->
+                <!--<directory>src/main/resources/spring</directory>-->
+                <!--<filtering>true</filtering>-->
+                <!--<includes>-->
+                    <!--<include>spring-context.xml</include>-->
+                <!--</includes>-->
+            <!--</resource>-->
+        <!--</resources>-->
+
+        <!--<pluginManagement>-->
+            <!--<plugins>-->
+                <!--&lt;!&ndash; 解决Maven插件在Eclipse内执行了一系列的生命周期引起冲突 &ndash;&gt;-->
+                <!--<plugin>-->
+                    <!--<groupId>org.eclipse.m2e</groupId>-->
+                    <!--<artifactId>lifecycle-mapping</artifactId>-->
+                    <!--<version>1.0.0</version>-->
+                    <!--<configuration>-->
+                        <!--<lifecycleMappingMetadata>-->
+                            <!--<pluginExecutions>-->
+                                <!--<pluginExecution>-->
+                                    <!--<pluginExecutionFilter>-->
+                                        <!--<groupId>org.apache.maven.plugins</groupId>-->
+                                        <!--<artifactId>maven-dependency-plugin</artifactId>-->
+
+                                        <!--<goals>-->
+                                            <!--<goal>copy-dependencies</goal>-->
+                                        <!--</goals>-->
+                                    <!--</pluginExecutionFilter>-->
+                                    <!--<action>-->
+                                        <!--<ignore />-->
+                                    <!--</action>-->
+                                <!--</pluginExecution>-->
+                            <!--</pluginExecutions>-->
+                        <!--</lifecycleMappingMetadata>-->
+                    <!--</configuration>-->
+                <!--</plugin>-->
+            <!--</plugins>-->
+        <!--</pluginManagement>-->
+        <plugins>
+            <!-- 方式一 -->
+            <!-- 注意通过这种方式打包启动jar 需要把项目依赖jar包放到待启动jar包一起 -->
+            <!-- 打包jar文件时，配置manifest文件，加入lib包的jar依赖 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <classesDirectory>target/classes/</classesDirectory>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.qingtai.main.CoreLauncher</mainClass>
+                            <!-- 打包时 MANIFEST.MF文件不记录的时间戳版本 -->
+                            <useUniqueVersions>false</useUniqueVersions>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>.</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <type>jar</type>
+                            <includeTypes>jar</includeTypes>
+                            <!--<useUniqueVersions>false</useUniqueVersions>-->
+                            <outputDirectory>
+                                ${project.build.directory}/lib
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 方式二 -->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                <!--<version>2.5.5</version>-->
+                <!--<configuration>-->
+                    <!--<archive>-->
+                        <!--<manifest>-->
+                            <!--<mainClass>org.qingtai.main.CoreLauncher</mainClass>-->
+                        <!--</manifest>-->
+                    <!--</archive>-->
+                    <!--<descriptorRefs>-->
+                        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                    <!--</descriptorRefs>-->
+                <!--</configuration>-->
+                <!--&lt;!&ndash; 其中<phase>package</phase>、<goal>single</goal>即表示在执行package打包时，&ndash;&gt;-->
+                <!--&lt;!&ndash; 执行assembly:single，所以可以直接使用mvn package打包。&ndash;&gt;-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>make-assembly</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>single</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+
+            <!-- 方式三 -->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-shade-plugin</artifactId>-->
+                <!--<version>2.4.1</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>shade</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<transformers>-->
+                                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+                                    <!--<mainClass>org.qingtai.main.CoreLauncher</mainClass>-->
+                                <!--</transformer>-->
+                                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
+                                    <!--<resource>META-INF/spring.handlers</resource>-->
+                                <!--</transformer>-->
+                                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
+                                    <!--<resource>META-INF/spring.schemas</resource>-->
+                                <!--</transformer>-->
+                            <!--</transformers>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+        </plugins>
+
+    </build>
+
+</project>
